@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skill Eval Review</title>
+<style>
+  :root {
+    --bg: #14161a; --surface: #1c1f25; --surface-2: #242830; --border: #323743;
+    --text: #e6e8ec; --muted: #9aa1ad; --accent: #7aa2f7; --good: #73c991; --bad: #f07178;
+    --user-bubble: #2a3140; --asst-bubble: #1f2a24;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f6f7f9; --surface: #ffffff; --surface-2: #eef0f3; --border: #d9dde3;
+      --text: #1d2026; --muted: #5d6573; --accent: #3a63c9; --good: #2f8f55; --bad: #c8424b;
+      --user-bubble: #e7ecf6; --asst-bubble: #e9f4ec;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 -apple-system, system-ui, sans-serif; }
+  header { position: sticky; top: 0; z-index: 2; background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 10px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0; }
+  .progress { color: var(--muted); }
+  main { padding: 12px 16px 120px; max-width: 1500px; margin: 0 auto; }
+  .scenario { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .scenario h2 { margin: 0 0 4px; font-size: 16px; }
+  .scenario .what { color: var(--muted); margin: 0 0 8px; }
+  .prompt { background: var(--surface-2); border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; font-size: 13px; max-height: 120px; overflow: auto; }
+  details { margin-top: 8px; } summary { cursor: pointer; color: var(--accent); }
+  .persona { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .facts { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+  .facts th, .facts td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+  .facts td.mark { text-align: center; width: 110px; font-weight: 600; }
+  .pass { color: var(--good); } .fail { color: var(--bad); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+  .col { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; min-width: 0; }
+  .col-head { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .col-head h3 { margin: 0; font-size: 14px; }
+  .stats { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .tabs { display: flex; gap: 4px; margin-top: 8px; }
+  .tabs button { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; cursor: pointer; font-size: 12px; }
+  .tabs button.on { border-color: var(--accent); color: var(--accent); }
+  .pane { padding: 12px; height: calc(100vh - 420px); min-height: 320px; overflow: auto; }
+  .turn { margin-bottom: 10px; max-width: 92%; padding: 8px 10px; border-radius: 10px; }
+  .turn.user { background: var(--user-bubble); margin-left: auto; }
+  .turn.assistant { background: var(--asst-bubble); }
+  .turn .who { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+  .qbadge { font-size: 11px; padding: 0 6px; border-radius: 8px; border: 1px solid var(--border); }
+  .qbadge.many { color: var(--bad); border-color: var(--bad); }
+  .mdtext { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .mdh { display: inline-block; font-size: 15px; margin-top: 6px; color: var(--accent); }
+  .actions { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border);
+    padding: 10px 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; z-index: 2; }
+  .actions textarea { flex: 1 1 320px; min-height: 38px; max-height: 90px; resize: vertical; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font: inherit; }
+  .btn { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; cursor: pointer; font: inherit; white-space: nowrap; }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  kbd { font-size: 11px; opacity: .75; border: 1px solid currentColor; border-radius: 3px; padding: 0 4px; margin-left: 4px; }
+  .verdict-tag { font-size: 12px; color: var(--muted); }
+  dialog { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 10px; max-width: 460px; }
+  dialog::backdrop { background: rgba(0,0,0,.5); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Skill eval review: <span id="skill-name"></span></h1>
+  <span class="progress" id="progress"></span>
+  <button class="btn" id="save-top">Save feedback <kbd>⌘S</kbd></button>
+</header>
+<main id="main"></main>
+<div class="actions">
+  <button class="btn" id="back">← Back <kbd>←</kbd></button>
+  <textarea id="note" placeholder="Notes: where did it drag, miss something, or ask something dumb? (press N to type, Esc to leave)"></textarea>
+  <button class="btn primary" id="skill-better">Skill is better <kbd>Enter</kbd></button>
+  <button class="btn" id="needs-work">Skill needs work <kbd>W</kbd></button>
+  <button class="btn" id="baseline-better">Baseline is better <kbd>B</kbd></button>
+  <button class="btn" id="skip">Skip <kbd>→</kbd></button>
+  <span class="verdict-tag" id="verdict-tag"></span>
+</div>
+<dialog id="save-dialog">
+  <h3 style="margin-top:0">All scenarios reviewed</h3>
+  <p>Save your verdicts and notes as <code>feedback.json</code>. It goes to your Downloads folder.</p>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn" id="dialog-cancel">Keep reviewing</button>
+    <button class="btn primary" id="dialog-save" autofocus>Save <kbd>Enter</kbd></button>
+  </div>
+</dialog>
+<script>
+const DATA = __REVIEW_DATA__;
+const CONFIG_LABELS = { with_skill: 'With skill', without_skill: 'Without skill (baseline)' };
+const reviews = {};
+let index = 0;
+let dirty = false;
+const viewTab = { with_skill: 'transcript', without_skill: 'transcript' };
+
+const el = (id) => document.getElementById(id);
+const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// ponytail: escape-first mini renderer (headings + bold only); swap for a real markdown lib if tables need rendering
+const renderMarkdown = (s) => `<div class="mdtext">${escapeHtml(s)
+  .replace(/^#{1,6}\s+(.*)$/gm, '<strong class="mdh">$1</strong>')
+  .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>`;
+
+const reviewedCount = () => Object.values(reviews).filter((r) => r.verdict).length;
+
+function renderProgress() {
+  el('progress').textContent = `Scenario ${index + 1} of ${DATA.evals.length} · ${reviewedCount()} reviewed`;
+  const r = reviews[DATA.evals[index].name];
+  el('verdict-tag').textContent = r?.verdict ? `Current: ${r.verdict}` : '';
+}
+
+function renderFactsTable(ev) {
+  const configs = Object.keys(ev.configs);
+  const texts = ev.configs[configs[0]].grading.map((g) => g.text);
+  const rows = texts.map((text, i) => `<tr><td>${escapeHtml(text)}</td>${configs.map((c) => {
+    const g = ev.configs[c].grading[i];
+    return `<td class="mark ${g.passed ? 'pass' : 'fail'}" title="${escapeHtml(g.evidence || '')}">${g.passed ? '✓' : '✗'}</td>`;
+  }).join('')}</tr>`).join('');
+  const score = configs.map((c) => `${CONFIG_LABELS[c] || c} ${ev.configs[c].grading.filter((g) => g.passed).length}/${texts.length}`).join(' · ');
+  return `<details><summary>Automated checks: ${score}</summary><table class="facts"><tr><th>Check</th>${configs.map((c) => `<th style="text-align:center">${CONFIG_LABELS[c] || c}</th>`).join('')}</tr>${rows}</table></details>`;
+}
+
+function renderTranscript(turns) {
+  return turns.map((t) => {
+    const questions = t.role === 'assistant' ? (t.text.match(/\?/g) || []).length : 0;
+    const badge = t.role === 'assistant' && questions ? `<span class="qbadge ${questions > 2 ? 'many' : ''}">${questions} question${questions > 1 ? 's' : ''}</span>` : '';
+    return `<div class="turn ${t.role}"><div class="who"><span>${t.role === 'user' ? 'Simulated user' : 'Assistant'}</span>${badge}</div><div class="md">${renderMarkdown(t.text)}</div></div>`;
+  }).join('');
+}
+
+function renderColumn(config, run) {
+  const pane = viewTab[config] === 'transcript' ? renderTranscript(run.turns) : `<div class="md">${renderMarkdown(run.final)}</div>`;
+  const passed = run.grading.filter((g) => g.passed).length;
+  const assistantTurns = run.turns.filter((t) => t.role === 'assistant').length;
+  return `<section class="col">
+    <div class="col-head"><h3>${CONFIG_LABELS[config] || config}</h3>
+      <div class="stats">${assistantTurns} assistant turns · ${run.seconds ? run.seconds.toFixed(0) + 's' : '–'} · ${passed}/${run.grading.length} checks</div>
+      <div class="tabs">
+        <button data-config="${config}" data-tab="transcript" class="${viewTab[config] === 'transcript' ? 'on' : ''}">Conversation <kbd>${config === 'with_skill' ? '1' : '3'}</kbd></button>
+        <button data-config="${config}" data-tab="final" class="${viewTab[config] === 'final' ? 'on' : ''}">Final page <kbd>${config === 'with_skill' ? '2' : '4'}</kbd></button>
+      </div></div>
+    <div class="pane">${pane}</div></section>`;
+}
+
+function render() {
+  const ev = DATA.evals[index];
+  el('main').innerHTML = `
+    <section class="scenario">
+      <h2>${escapeHtml(ev.title)}</h2>
+      <p class="what">${escapeHtml(ev.expected)}</p>
+      <div class="prompt">${escapeHtml(ev.prompt)}</div>
+      <details><summary>Hidden persona (what the fake user knew but only says when asked)</summary><div class="persona">${escapeHtml(ev.persona)}</div></details>
+      ${renderFactsTable(ev)}
+    </section>
+    <div class="cols">${Object.entries(ev.configs).map(([c, run]) => renderColumn(c, run)).join('')}</div>`;
+  el('main').querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.config, b.dataset.tab)));
+  el('note').value = reviews[ev.name]?.feedback || '';
+  renderProgress();
+}
+
+function switchTab(config, tab) { viewTab[config] = tab; render(); }
+
+function recordVerdict(verdict) {
+  const ev = DATA.evals[index];
+  reviews[ev.name] = { verdict, feedback: el('note').value.trim(), timestamp: new Date().toISOString() };
+  dirty = true;
+  if (index < DATA.evals.length - 1) { index += 1; render(); window.scrollTo(0, 0); }
+  else { renderProgress(); el('save-dialog').showModal(); el('dialog-save').focus(); }
+}
+
+function saveFeedback() {
+  const payload = {
+    skill_name: DATA.skill_name,
+    iteration: DATA.iteration,
+    confirmation: 'user-reviewed',
+    status: reviewedCount() === DATA.evals.length ? 'complete' : 'partial',
+    reviews: DATA.evals.map((ev) => ({
+      run_id: `${ev.dir}-with_skill`,
+      eval_name: ev.name,
+      verdict: reviews[ev.name]?.verdict || null,
+      feedback: reviews[ev.name]?.feedback || '',
+      timestamp: reviews[ev.name]?.timestamp || null
+    }))
+  };
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+  link.download = 'feedback.json';
+  link.click();
+  dirty = false;
+  el('save-dialog').close();
+  el('progress').textContent += ' · saved to Downloads/feedback.json';
+}
+
+el('skill-better').onclick = () => recordVerdict('skill better');
+el('needs-work').onclick = () => recordVerdict('skill needs work');
+el('baseline-better').onclick = () => recordVerdict('baseline better');
+el('skip').onclick = () => { if (index < DATA.evals.length - 1) { index += 1; render(); } };
+el('back').onclick = () => { if (index > 0) { index -= 1; render(); } };
+el('save-top').onclick = saveFeedback;
+el('dialog-save').onclick = saveFeedback;
+el('dialog-cancel').onclick = () => el('save-dialog').close();
+el('note').addEventListener('input', () => { dirty = true; });
+
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); saveFeedback(); return; }
+  if (el('save-dialog').open) return;
+  if (document.activeElement === el('note')) {
+    if (e.key === 'Escape') el('note').blur();
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); el('note').blur(); recordVerdict('skill better'); }
+    return;
+  }
+  const actions = {
+    Enter: () => recordVerdict('skill better'), w: () => recordVerdict('skill needs work'), b: () => recordVerdict('baseline better'),
+    ArrowRight: () => el('skip').click(), ArrowLeft: () => el('back').click(),
+    n: () => el('note').focus(),
+    1: () => switchTab('with_skill', 'transcript'), 2: () => switchTab('with_skill', 'final'),
+    3: () => switchTab('without_skill', 'transcript'), 4: () => switchTab('without_skill', 'final')
+  };
+  if (actions[e.key]) { e.preventDefault(); actions[e.key](); }
+});
+window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+el('skill-name').textContent = `${DATA.skill_name} · iteration ${DATA.iteration}`;
+render();
+</script>
+</body>
+</html>

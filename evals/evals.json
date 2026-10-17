@@ -1,0 +1,30 @@
+{
+  "skill_name": "job-mapping-interview",
+  "simulation_note": "The skill is a multi-turn interview, so each run simulates both sides. The assistant must not use persona facts until the simulated user has revealed them in reply to a question.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "friday-kpi-report",
+      "prompt": "can you help me write down how i do my friday report so i can hand it to claude? it keeps getting it wrong",
+      "persona": "Dana, marketing ops analyst. Every Friday by 10am she sends the weekly KPI report to the CFO (Priya) and cc's the marketing leads. Inputs: HubSpot export (deals + MQLs) pulled Friday 8am, Google Ads spend CSV from the shared drive folder 'Ads/Weekly', and a Slack message from sales ops (Marco) with any deals he wants manually reclassified. Steps: filter out internal test accounts (any email at @acme-test.com or company name containing 'TEST'), dedupe MQLs by email keeping the earliest, compute CAC = ad spend / new customers. Judgment calls: if any channel's MQLs drop more than 15% week-over-week she writes a one-line explanation (she checks if a campaign was paused); if Marco's reclassifications arrive after 9am she ignores them until next week and notes it. Output: a 1-page Google Doc from the 'Weekly KPI' template plus a 3-bullet Slack summary in #marketing-leads. Human check: she eyeballs CAC against last 4 weeks; anything >25% off she re-checks the spend CSV for duplicate rows (has happened twice). Priya sends it back if numbers don't tie to the HubSpot dashboard. She's a bit defensive at first: 'honestly I just kind of know what looks off'.",
+      "expected_output": "One-question-at-a-time interview that surfaces the test-account filter, the 15% drop rule, the 9am cutoff, the CAC sanity check, and produces a four-heading work map with a Test Log and a hand-off telling her to test it in a fresh chat/Project.",
+      "title": "Dana's Friday KPI report (marketing ops)"
+    },
+    {
+      "id": 2,
+      "name": "vague-whole-role",
+      "prompt": "My AI keeps getting my job wrong. I'm a clinical research coordinator and I do like a million things. How do I explain my process to it?",
+      "persona": "Sam, clinical research coordinator at a hospital site. Does many jobs: patient screening, visit scheduling, monthly sponsor invoice reconciliation, regulatory binder upkeep. The most painful repeat job is monthly invoice reconciliation: on the 1st, export completed visits from the CTMS (OnCore), compare against the sponsor payment remittance PDF, match by subject ID + visit name. Judgment calls: screen failures are only billable if the subject signed consent; unscheduled visits need PI sign-off documented before invoicing; holdback is 10% until study close so expected payment = 90%. Output: an Excel reconciliation sheet emailed to the finance analyst (Jordan) plus a list of unpaid items to invoice. Human check: the research manager (Lee) reviews any line over $2,000 or any disputed item before it goes to the sponsor. Sam will happily pick a single job if asked.",
+      "expected_output": "Narrows to one repeated job before mapping, then interviews and produces a work map capturing consent rule, PI sign-off rule, 10% holdback, and the $2,000 manager review.",
+      "title": "Sam the CRC: \"I do a million things\""
+    },
+    {
+      "id": 3,
+      "name": "patch-existing-sop",
+      "prompt": "Here's my SOP for new patient intake that I put in my Claude project. Yesterday Claude skipped the insurance eligibility check and booked someone whose plan we don't take. Can you fix it?\n\n# Intake SOP\n## Input\n- New patient web form (name, DOB, insurance, reason for visit)\n## Do\n1. Create chart in EHR\n2. Book first available new-patient slot\n3. Send welcome email\n## Output\n- Booked appointment + welcome email\n## Human Check\n- Front desk lead reviews the day's bookings at 4pm",
+      "persona": "Riley, practice manager at a small physical therapy clinic. The eligibility check: before booking, run the patient's insurance through the Availity portal; the clinic is in-network only with Aetna, BCBS, and United. If out-of-network, don't book; instead reply with the self-pay rate ($120/visit) and ask if they want to proceed. If Availity is down, book provisionally and flag in the chart as 'ELIGIBILITY PENDING'. Riley wants a quick fix, not a long interview.",
+      "expected_output": "Targeted patch: a few questions to find the missing rule, an updated Do section with the eligibility step before booking, out-of-network handling, and a Test Log row describing the failure and fix. No full four-heading re-interview.",
+      "title": "Riley's intake SOP: patch a known failure"
+    }
+  ]
+}
