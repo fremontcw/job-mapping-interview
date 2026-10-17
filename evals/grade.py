@@ -31,9 +31,12 @@ def interview_checks(turns: list[str]) -> list[tuple[str, bool, str]]:
     # ponytail: '?' count is a proxy for "one question at a time"; ≤2 allows a recap + question
     counts = [t.count("?") for t in turns[:-1]]
     tested = bool(re.search(r"fresh chat|new chat|project", turns[-1] if turns else "", re.I))
+    asks_failure = any(re.search(r"(get|getting|got|go|goes|going) wrong", t, re.I) and "?" in t for t in turns[:3])
     return [
         ("At most one question per turn (<=2 '?')", all(c <= 2 for c in counts), f"'?' per turn: {counts}"),
         ("Hand-off tells user to test in fresh chat/Project", tested, ""),
+        ("Asks what the AI gets wrong within first 3 turns", asks_failure, ""),
+        ("Interview stays under 17 assistant turns", len(turns) <= 16, f"{len(turns)} turns"),
     ]
 
 
@@ -67,7 +70,9 @@ def grade_run(eval_name: str, outputs: Path) -> list[dict]:
     if eval_name == "patch-existing-sop":
         elig, book = final.lower().find("eligib"), final.lower().find("book first")
         checks.append(("Eligibility step placed before booking", elig != -1 and (book == -1 or elig < book), f"eligib@{elig} book@{book}"))
-        checks.append(("Quick patch: <=4 assistant turns", len(turns) <= 4, f"{len(turns)} turns"))
+        checks.append(("Quick patch: <=5 assistant turns (incl. confirm)", len(turns) <= 5, f"{len(turns)} turns"))
+        confirmed = any(re.search(r"match|right\?|correct\?|look good|accurate", t, re.I) for t in turns[:-1])
+        checks.append(("Confirms the patch with the user before final", confirmed, ""))
     else:
         checks += interview_checks(turns)
     for text, patterns in FACT_CHECKS[eval_name]:

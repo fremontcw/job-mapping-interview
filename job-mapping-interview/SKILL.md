@@ -26,9 +26,13 @@ Judgment calls are where AI fails most often, so spend the most time in **Do** a
 
 **2. Optional warm-up: the two-minute draft.** If the user wants it, have them write how they do the job in two minutes, without help, before you start. Their draft shows where the gaps are, and comparing it with the finished map shows them how much they knew but had never written down. If they'd rather skip it, go straight to questions.
 
-**3. Ask one question at a time.** Wait for each answer before asking the next question. A list of ten questions gets ten short answers. One question gets a real one, and the answer tells you what to ask next. Work through the headings in order: Input, Do, Output, Human Check.
+**3. Start from what's going wrong.** If the user says their AI (or a coworker) keeps getting the job wrong, ask what it gets wrong before anything else. Real failures point straight at the missing rules, so dig into those areas first and make sure the map fixes each one.
 
-**4. Dig until a stranger could do it.** After each answer, ask yourself: *could a smart coworker who has never done this job act on this?* If not, ask a follow-up. Useful follow-ups:
+**4. Ask one question at a time.** Wait for each answer before asking the next question. A list of ten questions gets ten short answers. One question gets a real one, and the answer tells you what to ask next. Work through the headings in order: Input, Do, Output, Human Check. Two tiny factual follow-ups about the same thing can go together ("What time do you pull it, and from which folder?"), but never pair two judgment questions.
+
+**Keep it to roughly 10–15 questions.** People are busy, and a 25-question interview feels like an audit. Spend the questions on the judgment calls and the checkpoints, not on details that are easy to fix later. When Do and Human Check are solid, offer a choice: "I have enough for a solid first draft. Write it now, or dig into anything else first?" Anything still unclear goes under Open Questions. The Test Log will catch the rest.
+
+**5. Dig until a stranger could do it.** After each answer, ask yourself: *could a smart coworker who has never done this job act on this?* If not, ask a follow-up. Useful follow-ups:
 - "Where exactly does that come from? Who sends it, and in what format?"
 - "How do you decide? What would make you choose the other way?"
 - "What's the most common thing that goes wrong here?"
@@ -38,11 +42,11 @@ Judgment calls are where AI fails most often, so spend the most time in **Do** a
 
 Phrases like "I just know," "it depends," "the usual," or "I clean it up" mean there's a hidden rule. Ask what it depends on, or ask for the last two times it went each way.
 
-**5. Reflect back as you go.** After finishing each heading, summarize it in a few bullets and ask "Anything missing or wrong?" before moving on. This catches misunderstandings while they're cheap to fix.
+**6. Reflect back as you go.** After finishing each heading, summarize it in a few bullets and ask "Anything missing or wrong?" before moving on. This catches misunderstandings while they're cheap to fix.
 
-**6. Write the page** (template below). Use the user's own words for their terms and tools. Don't make up steps they didn't describe. If something is still unknown, put it under Open Questions.
+**7. Write the page** (template below). Use the user's own words for their terms and tools. Don't make up steps, rules, or common mistakes they didn't describe. A map the user didn't say is how the AI learns wrong rules. If something is still unknown, put it under Open Questions.
 
-**7. Hand off with the test step.** Tell the user what to do next:
+**8. Hand off with the test step.** Tell the user what to do next:
 > Put this page into a Claude Project (or paste it into a fresh chat) and give it a real example of the job. Wherever it trips up, add a line to the **Test Log** describing what went wrong and the rule that fixes it, then update the page. Or come back and we'll patch it together.
 
 ## Tone
@@ -93,4 +97,4 @@ Use this structure for the finished page:
 
 ## Patching an existing map
 
-If the user brings an existing map or SOP with a failure ("it did X wrong"), skip the full interview. Find which heading the failure belongs to, ask only the questions needed to find the missing rule, update that section, and add a row to the Test Log.
+If the user brings an existing map or SOP with a failure ("it did X wrong"), skip the full interview. Find which heading the failure belongs to, ask only the questions needed to find the missing rule (including what should happen when that step can't be done), and update that section. Before you hand back the full page, show the changed lines and ask "Does this match how you actually do it?" A quick confirmation now is cheaper than another failure. Then return the updated page with a new row in the Test Log, and leave everything else as the user wrote it.
