@@ -45,5 +45,9 @@ job-mapping-interview/
 └── SKILL.md   # interview method, tone, and the work-map template
 ```
 
+## Credits & lineage
+- The **coworker test** and the Input / Do / Output / Human Check framing come from [Jake Van Clief](https://www.youtube.com/@JakeVanClief) of **Clief Notes**, which has 40+ free lessons on mapping your own work for AI.
+- The four headings build on long-standing process-mapping practice: the **Input → Process → Output** model from systems analysis, Six Sigma's **SIPOC** (Suppliers, Inputs, Process, Outputs, Customers), and the human-review checkpoints used in standard operating procedures (SOPs). If your team already uses one of these, the skill works the same way. Just map its terms to the four headings.
+
 ## License
 MIT
